@@ -21,8 +21,10 @@ export const FilterSidebar = () => {
     ];
 
     const handleSizeChanged = (size: string) => {
+        if (currentSizes[0] === '') {
+            currentSizes.shift();
+        }
         const newSizes = currentSizes.includes(size) ? currentSizes.filter(s => s !== size) : [...currentSizes, size];
-
         searchParams.set('page', '1');
         searchParams.set('sizes', newSizes.join(','));
         setSearchParams(searchParams);

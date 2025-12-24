@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# Teslo Shop
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Pequeña tienda demo construida con React + TypeScript y Vite. Está pensada como proyecto de ejemplo con una sección pública (shop), autenticación simple (auth) y un panel de administración (admin). Los datos de productos son _fixtures_ locales en `src/mocks` (no hay backend integrado).
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔧 Comandos principales
 
-## React Compiler
+- Instalar dependencias: `npm install`
+- Iniciar dev server (Vite): `npm run dev`
+- Construir para producción: `npm run build` (ejecuta `tsc -b && vite build`)
+- Previsualizar build: `npm run preview`
+- Lint (ESLint): `npm run lint`
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+> Requisito: Node.js moderno (preferible 18+). Vite maneja el bundling y HMR.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Arquitectura y archivos clave
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- `src/TesloShopApp.tsx` — Contiene providers globales (React Query `QueryClientProvider` y `ReactQueryDevtools`).
+- `src/app.router.tsx` — Rutas principales, con layouts lazy-loaded (`AuthLayout`, `AdminLayout`).
+- `src/shop`, `src/auth`, `src/admin` — Carpetas por área funcional (layouts, pages, components).
+- `src/components/ui/*` — Componentes UI compartidos (botones, inputs, tablas) usando `class-variance-authority` (`cva`) y la utilidad `cn` en `src/lib/utils.ts`.
+- `src/mocks/products.mock.ts` — Datos de producto usados por la tienda (imagen importadas desde `src/assets`).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Convenciones del proyecto
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Alias `@` → `src` (configurado en `vite.config.ts` y `tsconfig.json`). Usar `@/...` para importaciones internas.
+- UI: seguir el patrón `cva` + `cn` para variantes y composición de clases (ej.: `src/components/ui/button.tsx`). Mantener `className` passthrough en nuevos componentes.
+- Layouts grandes deben cargarse con lazy-loading en el router para mejorar el bundle inicial.
+- Formularios administrativos (ej.: `src/admin/pages/product/AdminProductPage.tsx`) son actualmente controlados con estado local y manejan subida de archivos con `onDrop`/`onChange` (por ahora hacen `console.log` de los ficheros).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Integración de datos / React Query
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- React Query ya está inicializado en `TesloShopApp`. Cuando añadas llamadas a datos:
+  - Crea un módulo `src/api/*` o `src/lib/api.ts` para encapsular fetchers con `axios`.
+  - Añade hooks con `useQuery` / `useMutation` y organiza las keys de cache de forma consistente.
+
+---
+
+## Buenas prácticas al contribuir
+
+- Respeta el patrón de componentes en `src/components/ui` (usa `cva` + `cn`).
+- Añade nuevas páginas como hijo del layout apropiado en `app.router.tsx`.
+- Ejecuta `npm run lint` antes de crear PRs; seguir las reglas en `eslint.config.js`.
+
+---
