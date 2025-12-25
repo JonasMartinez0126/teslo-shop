@@ -45,7 +45,7 @@ export const CustomFooter = () => {
                 </div>
 
                 <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-                    <p>&copy; {new Date().getFullYear()} Teslo Style. Todos los derechos reservados.</p>
+                    <p>&copy; {new Date().getFullYear()} Teslo Shop. Todos los derechos reservados.</p>
                 </div>
             </div>
         </footer>
