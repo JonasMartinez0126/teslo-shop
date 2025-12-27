@@ -1,5 +1,5 @@
 import type { Product, Size } from '@/interfaces/product.interface';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,11 @@ interface Props {
     subtitle: string;
     product: Product;
     isPending: boolean;
-    onSubmit: (productLike: Partial<Product>) => Promise<void>;
+    onSubmit: (productLike: Partial<Product> & { files?: File[] }) => Promise<void>;
+}
+
+interface FormInputs extends Product {
+    files?: File[]
 }
 
 const availableSizes: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -26,16 +30,21 @@ export const ProductForm = ({ title, subtitle, product, onSubmit, isPending }: P
         getValues,
         setValue,
         watch
-    } = useForm({
+    } = useForm<FormInputs>({
         defaultValues: product
     });
 
     const labelInputRef = useRef<HTMLInputElement>(null);
+    const [files, setFiles] = useState<File[]>([]);
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const selectedSizes = watch('sizes');
     const selectedTags = watch('tags');
     const currentStock = watch('stock');
+
+    useEffect(() => {
+        setFiles([]);
+    }, [])
 
     const addTag = () => {
         const newTag = labelInputRef.current!.value;
@@ -79,12 +88,24 @@ export const ProductForm = ({ title, subtitle, product, onSubmit, isPending }: P
         e.stopPropagation();
         setDragActive(false);
         const files = e.dataTransfer.files;
-        console.log(files);
+
+        if (!files) return;
+
+        setFiles(prev => [...prev, ...Array.from(files)]);
+
+        const currentFiles = getValues('files') || [];
+        setValue('files', [...currentFiles, ...Array.from(files)]);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-        console.log(files);
+
+        if (!files) return;
+
+        setFiles(prev => [...prev, ...Array.from(files)]);
+
+        const currentFiles = getValues('files') || [];
+        setValue('files', [...currentFiles, ...Array.from(files)]);
     };
 
     return (
@@ -418,6 +439,29 @@ export const ProductForm = ({ title, subtitle, product, onSubmit, isPending }: P
                                             </p>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+
+                            {/* Imagenes por cargar */}
+                            <div className={
+                                cn("mt-6 space-y-3", {
+                                    'hidden': files.length === 0
+                                })
+                            }>
+                                <h3 className="text-sm font-medium text-slate-700">
+                                    Imágenes por cargar
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {
+                                        files.map((file, index) => (
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                key={index}
+                                                alt="Product"
+                                                className="w-full h-full object-cover rounded-lg"
+                                            />
+                                        ))
+                                    }
                                 </div>
                             </div>
                         </div>
