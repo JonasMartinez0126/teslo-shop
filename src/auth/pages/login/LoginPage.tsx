@@ -23,9 +23,9 @@ export const LoginPage = () => {
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
 
-        await login(email, password);
+        const result = await login(email, password);
 
-        toast.error('Correo o/y contraseña no validos');
+        if (!result) toast.error('Correo o/y contraseña no validos');
 
         setIsPosting(false);
     }
